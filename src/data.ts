@@ -35,20 +35,7 @@ export const projects = [
     ],
     stack: ["React", "TypeScript", "Node.js", "Express", "MongoDB", "Tailwind", "Leaflet"],
     live: "https://medisync-xwzq.onrender.com/",
-    code: `${GITHUB}/medisync`,
-  },
-  {
-    no: "03",
-    name: "DocOnGo",
-    latin: "Doctor portabilis",
-    plate: "/img/plate-docongo.webp",
-    shot: "/img/shot-docongo.webp",
-    summary:
-      "An AI doctor you can chat with. Describe what you feel and it asks follow-up questions like a doctor would, then suggests what it could be and what to do next.",
-    highlights: ["Real-time AI chat on serverless functions", "Accounts secured with JWT and bcrypt", "Deployed on Vercel"],
-    stack: ["React", "Node.js", "MongoDB", "JWT", "Vercel"],
-    live: "https://docongoai.vercel.app/",
-    code: undefined as string | undefined,
+    code: `${GITHUB}/medisync` as string | undefined,
   },
 ];
 

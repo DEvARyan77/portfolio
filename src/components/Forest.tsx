@@ -15,7 +15,17 @@ const btnLight =
   "inline-block rounded-full bg-[#f4efe2] px-6 py-3.5 font-semibold text-[#1f2a17] transition-colors hover:bg-white";
 const btnGlass = "glass inline-block rounded-full px-6 py-3.5 font-semibold text-white transition-colors hover:bg-white/25";
 
-const TAG_TILT = [-4, 3, -2, 4, -3];
+/** height of the twig's stick (0–1 of the image height) at 60 points along its length */
+const TWIG = [
+  0.317, 0.329, 0.347, 0.374, 0.401, 0.434, 0.449, 0.509, 0.551, 0.644, 0.626, 0.647, 0.665, 0.692, 0.719, 0.743, 0.749,
+  0.74, 0.704, 0.719, 0.719, 0.698, 0.674, 0.656, 0.632, 0.608, 0.587, 0.569, 0.542, 0.518, 0.494, 0.455, 0.437, 0.434,
+  0.404, 0.38, 0.359, 0.332, 0.329, 0.32, 0.305, 0.299, 0.29, 0.287, 0.26, 0.329, 0.362, 0.395, 0.431, 0.491, 0.563,
+  0.524, 0.563, 0.59, 0.641, 0.689, 0.737, 0.79, 0.844, 0.886,
+];
+/** where the hole sits on the tag image (fraction of its height) */
+const TAG_HOLE = 0.0786;
+/** the board image is three planks; text rows sit in the middle of each */
+const PLANKS = "grid-rows-[32.4%_34%_33.6%]";
 
 /** offset of el inside ancestor, ignoring transforms */
 function offsetIn(el: HTMLElement, ancestor: HTMLElement) {
@@ -30,9 +40,9 @@ function offsetIn(el: HTMLElement, ancestor: HTMLElement) {
   return { x, y };
 }
 
-function SectionTitle({ kick, title }: { kick: string; title: string }) {
+function SectionTitle({ kick, title, center = false }: { kick: string; title: string; center?: boolean }) {
   return (
-    <div className="sec-title">
+    <div className={`sec-title ${center ? "text-center" : ""}`}>
       <span className="mask">
         <span className="title-line kick block text-3xl">{kick}</span>
       </span>
@@ -40,6 +50,41 @@ function SectionTitle({ kick, title }: { kick: string; title: string }) {
         <span className="title-line heading block text-6xl sm:text-8xl">{title}</span>
       </span>
     </div>
+  );
+}
+
+function ProjectDetails({ p, compact = false }: { p: (typeof projects)[number]; compact?: boolean }) {
+  return (
+    <>
+      <p className="text-[15px] leading-relaxed">{p.summary}</p>
+      <ul className={`mt-3 space-y-1.5 text-sm ${compact ? "hidden xl:block [@media(max-height:860px)]:hidden" : ""}`}>
+        {p.highlights.map((h) => (
+          <li key={h} className="flex gap-2">
+            <span aria-hidden className="text-moss">
+              ❧
+            </span>
+            {h}
+          </li>
+        ))}
+      </ul>
+      <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="Tech stack">
+        {p.stack.map((s) => (
+          <li key={s} className="rounded-full border border-[#b9ac88] px-2.5 py-0.5 text-xs">
+            {s}
+          </li>
+        ))}
+      </ul>
+      <div className="mt-4 flex gap-5 font-bold text-moss">
+        <a href={p.live} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">
+          Live demo ↗
+        </a>
+        {p.code && (
+          <a href={p.code} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">
+            GitHub ↗
+          </a>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -66,6 +111,7 @@ export default function Forest() {
     () => {
       const q = gsap.utils.selector(root);
       const el = <T extends HTMLElement = HTMLElement>(s: string) => q(s)[0] as T;
+      const cleanups: (() => void)[] = [];
 
       /* ---------- whole page: forest turns and zooms as you scroll, progress bar fills ---------- */
       gsap.to(".forest-img", {
@@ -83,9 +129,8 @@ export default function Forest() {
       /* ---------- falling leaves, forever ---------- */
       q(".leaf").forEach((leaf, i) => {
         const fall = () => {
-          const w = window.innerWidth;
           gsap.set(leaf, {
-            x: gsap.utils.random(-40, w),
+            x: gsap.utils.random(-40, window.innerWidth),
             y: -80,
             rotation: gsap.utils.random(0, 360),
             scale: gsap.utils.random(0.45, 1),
@@ -99,27 +144,41 @@ export default function Forest() {
             onComplete: fall,
           });
         };
-        gsap.delayedCall(i * 1.7, fall);
+        gsap.delayedCall(1.5 + i * 1.7, fall);
       });
 
-      /* ---------- hero entrance ---------- */
-      const intro = gsap.timeline({ defaults: { ease: "power4.out" } });
-      intro
-        .from(".hero-chip", { y: 24, opacity: 0, duration: 0.7 })
-        .from(".hero-line", { yPercent: 115, duration: 1.2, stagger: 0.14 }, "-=0.4")
-        .from(".hero-sub", { y: 30, opacity: 0, duration: 0.9 }, "-=0.7")
+      /* ---------- the little film inside the photo: Dev keeps taking pictures ---------- */
+      gsap.to(".photo-person", { y: -6, rotation: -1.2, duration: 1.6, yoyo: true, repeat: -1, ease: "sine.inOut" });
+      gsap
+        .timeline({ repeat: -1, repeatDelay: 2.4, delay: 3.4 })
+        .to(".photo-person", { scale: 0.985, duration: 0.08, yoyo: true, repeat: 1 }, 0)
+        .fromTo(".lens-flash", { scale: 0, opacity: 1 }, { scale: 2.2, opacity: 0, duration: 0.45, ease: "power2.out" }, 0.05)
+        .fromTo(".photo-flash", { opacity: 0.7 }, { opacity: 0, duration: 0.5, ease: "power2.out" }, 0.05);
+
+      /* ---------- hero entrance: photo drops, flash, it develops, then the words arrive ---------- */
+      gsap
+        .timeline({ defaults: { ease: "power4.out" } })
+        .from(".polaroid-drop", { y: -900, rotation: -40, duration: 1.4, ease: "back.out(1.1)" }, 0.2)
+        .from(".twig-pin", { x: -60, opacity: 0, rotation: -40, duration: 0.5 }, "-=0.3")
+        .fromTo(".screen-flash", { opacity: 0.85 }, { opacity: 0, duration: 0.6, ease: "power2.out" }, "-=0.1")
+        .fromTo(
+          ".photo-dev",
+          { filter: "brightness(2.6) saturate(0) contrast(0.55) blur(2px)" },
+          { filter: "brightness(1) saturate(1) contrast(1) blur(0px)", duration: 2.2, ease: "power2.out" },
+          "<",
+        )
+        .from(".hero-chip", { y: 24, opacity: 0, duration: 0.7 }, "<0.2")
+        .from(".hero-line", { yPercent: 115, duration: 1.2, stagger: 0.14 }, "<0.1")
+        .from(".hero-sub", { y: 30, opacity: 0, duration: 0.9 }, "-=0.8")
         .from(".hero-cta > *", { y: 24, opacity: 0, stagger: 0.1, duration: 0.7 }, "-=0.6")
-        .from(".polaroid-drop", { y: -900, rotation: -40, duration: 1.6, ease: "back.out(1.1)" }, 0.25)
-        .from(".twig-pin", { x: -60, opacity: 0, rotation: -40, duration: 0.6 }, "-=0.35")
+        .from(".psst", { scale: 0, rotation: -30, duration: 0.6, ease: "back.out(2)" }, "-=0.3")
         .from(".scroll-hint", { y: 20, opacity: 0, duration: 0.6 }, "-=0.2");
 
-      // polaroid sways on its twig
+      // polaroid sways on its twig and leans toward the cursor; the forest drifts a little too
       gsap.to(".polaroid-sway", { rotation: 4, duration: 3, yoyo: true, repeat: -1, ease: "sine.inOut" });
-
-      // polaroid and forest follow the mouse a little
-      const sway = el(".polaroid-tilt");
-      const tiltX = gsap.quickTo(sway, "rotationY", { duration: 0.6, ease: "power3" });
-      const tiltY = gsap.quickTo(sway, "rotationX", { duration: 0.6, ease: "power3" });
+      const tilt = el(".polaroid-tilt");
+      const tiltX = gsap.quickTo(tilt, "rotationY", { duration: 0.6, ease: "power3" });
+      const tiltY = gsap.quickTo(tilt, "rotationX", { duration: 0.6, ease: "power3" });
       const bgX = gsap.quickTo(".forest-img", "x", { duration: 1.2, ease: "power3" });
       const bgY = gsap.quickTo(".forest-img", "y", { duration: 1.2, ease: "power3" });
       const onMove = (e: PointerEvent) => {
@@ -131,6 +190,7 @@ export default function Forest() {
         bgY(-ny * 30);
       };
       window.addEventListener("pointermove", onMove);
+      cleanups.push(() => window.removeEventListener("pointermove", onMove));
 
       /* ---------- section titles rise in ---------- */
       q(".sec-title").forEach((t) => {
@@ -145,25 +205,17 @@ export default function Forest() {
 
       const mm = gsap.matchMedia();
 
-      /* ---------- DESKTOP ---------- */
+      /* ================= DESKTOP ================= */
       mm.add("(min-width: 1024px)", () => {
+        /* photo flies to the centre, flips over and becomes the field notes */
         const section = el("#top");
         const wrap = el(".polaroid-wrap");
-
-        // the photo flies to the centre, flips over, and becomes the field notes
         gsap.set(".notes", { rotationY: -90, opacity: 0, scale: 0.85 });
-        const flip = gsap.timeline({
-          defaults: { ease: "none" },
-          scrollTrigger: {
-            trigger: section,
-            start: "top top",
-            end: "+=220%",
-            pin: true,
-            scrub: 1,
-            invalidateOnRefresh: true,
-          },
-        });
-        flip
+        gsap
+          .timeline({
+            defaults: { ease: "none" },
+            scrollTrigger: { trigger: section, start: "top top", end: "+=220%", pin: true, scrub: 1, invalidateOnRefresh: true },
+          })
           .to(".hero-copy", { x: -220, opacity: 0, duration: 0.3 }, 0)
           .to(".scroll-hint", { opacity: 0, duration: 0.1 }, 0)
           .to(
@@ -184,45 +236,87 @@ export default function Forest() {
           .from(".notes-stamp", { scale: 2.4, opacity: 0, rotation: 20, duration: 0.1, ease: "back.out(2)" }, 0.88)
           .to({}, { duration: 0.12 });
 
-        // projects slide sideways while the section is pinned
-        const track = el(".work-track");
-        const dist = () => track.scrollWidth - window.innerWidth;
-        const slide = gsap.to(track, {
-          x: () => -dist(),
+        /* selected work: a focus carousel — the card in the middle grows, its neighbours shrink away */
+        const cards = q(".wcard");
+        const details = q(".wdetail");
+        const n = cards.length;
+        const spacing = () => Math.min(430, window.innerWidth * 0.3);
+        let active = -1;
+        const layout = (f: number) => {
+          cards.forEach((c, i) => {
+            const d = i - f;
+            const ad = Math.min(Math.abs(d), 2);
+            gsap.set(c, {
+              x: d * spacing(),
+              y: ad * 26,
+              scale: 1.18 - Math.min(ad, 1) * 0.38,
+              rotation: d * -5,
+              opacity: 1 - Math.max(0, ad - 1) * 0.6,
+              zIndex: 10 - Math.round(ad * 3),
+              filter: `brightness(${1 - Math.min(ad, 1) * 0.25})`,
+            });
+          });
+          const a = Math.round(gsap.utils.clamp(0, n - 1, f));
+          if (a !== active) {
+            active = a;
+            details.forEach((dEl, i) => {
+              gsap.to(dEl, { autoAlpha: i === a ? 1 : 0, y: i === a ? 0 : 14, duration: 0.45, ease: "power2.out", overwrite: true });
+            });
+          }
+        };
+        gsap.set(details, { autoAlpha: 0, y: 14 });
+        layout(0);
+        const proxy = { f: 0 };
+        gsap.to(proxy, {
+          f: n - 1,
           ease: "none",
+          onUpdate: () => layout(proxy.f),
           scrollTrigger: {
             trigger: "#work",
             start: "top top",
-            end: () => `+=${dist()}`,
+            end: () => `+=${(n - 1) * window.innerHeight * 0.9}`,
             pin: true,
-            scrub: 1,
+            scrub: 0.8,
+            snap: { snapTo: 1 / (n - 1), duration: 0.5, ease: "power2.inOut", delay: 0.1, directional: false },
             invalidateOnRefresh: true,
           },
         });
-        q(".specimen").forEach((card, i) => {
-          gsap.from(card, {
-            y: 160,
-            rotation: i % 2 ? -14 : 14,
-            opacity: 0.2,
-            ease: "power2.out",
-            scrollTrigger: { trigger: card, containerAnimation: slide, start: "left 100%", end: "left 55%", scrub: true },
-          });
-          const shot = card.querySelector(".shot");
-          if (shot)
-            gsap.from(shot, {
-              scale: 0,
-              rotation: -40,
-              ease: "back.out(2)",
-              scrollTrigger: { trigger: card, containerAnimation: slide, start: "left 70%", end: "left 45%", scrub: true },
-            });
+        gsap.from(".wtrack", {
+          y: 220,
+          opacity: 0,
+          duration: 1.1,
+          ease: "power3.out",
+          scrollTrigger: { trigger: "#work", start: "top 70%", toggleActions: "play none none reverse" },
         });
 
-        return () => {};
+        /* toolbox: each thread runs from the twig to its tag's hole */
+        const tagsBox = el(".tags");
+        const twig = el<HTMLImageElement>(".twig");
+        const threads = () => {
+          const tw = twig.offsetWidth;
+          const th = twig.offsetHeight;
+          const tx = offsetIn(twig, tagsBox).x;
+          q(".tag").forEach((t) => {
+            const o = offsetIn(t, tagsBox);
+            const cx = o.x + t.offsetWidth / 2 - tx;
+            const idx = gsap.utils.clamp(0, TWIG.length - 1, Math.floor((cx / tw) * TWIG.length));
+            const stickY = TWIG[idx] * th;
+            t.style.setProperty("--th", `${Math.max(12, o.y - stickY)}px`);
+          });
+        };
+        threads();
+        ScrollTrigger.addEventListener("refreshInit", threads);
+        const ro = new ResizeObserver(threads);
+        ro.observe(tagsBox);
+        return () => {
+          ScrollTrigger.removeEventListener("refreshInit", threads);
+          ro.disconnect();
+          q(".tag").forEach((t) => t.style.removeProperty("--th"));
+        };
       });
 
-      /* ---------- MOBILE / TABLET ---------- */
+      /* ================= PHONE / TABLET ================= */
       mm.add("(max-width: 1023px)", () => {
-        // photo flips away as you scroll past it, field notes flip in
         gsap.to(".polaroid-card", {
           rotationY: 90,
           ease: "power1.in",
@@ -248,7 +342,7 @@ export default function Forest() {
           ease: "back.out(2)",
           scrollTrigger: { trigger: ".notes-stamp", start: "top 90%", toggleActions: "play none none reverse" },
         });
-        q(".specimen").forEach((card, i) => {
+        q(".wcard").forEach((card, i) => {
           gsap.from(card, {
             y: 140,
             rotation: i % 2 ? -10 : 10,
@@ -256,14 +350,6 @@ export default function Forest() {
             ease: "power2.out",
             scrollTrigger: { trigger: card, start: "top 100%", end: "top 55%", scrub: true },
           });
-          const shot = card.querySelector(".shot");
-          if (shot)
-            gsap.from(shot, {
-              scale: 0,
-              rotation: -40,
-              ease: "back.out(2)",
-              scrollTrigger: { trigger: card, start: "top 60%", toggleActions: "play none none reverse" },
-            });
         });
       });
 
@@ -278,18 +364,18 @@ export default function Forest() {
           scrollTrigger: { trigger: b, start: "top 85%", toggleActions: "play none none reverse" },
         });
       });
-      q(".board-note").forEach((n) => {
-        gsap.from(n, {
+      q(".board-note").forEach((nEl) => {
+        gsap.from(nEl, {
           y: 50,
           opacity: 0,
           duration: 0.9,
           delay: 0.6,
           ease: "power3.out",
-          scrollTrigger: { trigger: n, start: "top 95%", toggleActions: "play none none reverse" },
+          scrollTrigger: { trigger: nEl, start: "top 95%", toggleActions: "play none none reverse" },
         });
       });
 
-      /* ---------- toolbox: twig slides in, tags drop and keep swinging ---------- */
+      /* ---------- toolbox: twig slides in, tags drop, then hang and follow the cursor ---------- */
       gsap.from(".twig", {
         xPercent: -110,
         rotation: -8,
@@ -297,35 +383,40 @@ export default function Forest() {
         ease: "power3.out",
         scrollTrigger: { trigger: ".tags", start: "top 85%", toggleActions: "play none none reverse" },
       });
-      q(".tag").forEach((t, i) => {
-        gsap.fromTo(
-          t,
-          { y: -520, rotation: gsap.utils.random(-45, 45), opacity: 0 },
-          {
-            y: 0,
-            rotation: TAG_TILT[i % TAG_TILT.length],
-            opacity: 1,
-            duration: 1.8,
-            delay: 0.25 + i * 0.13,
-            ease: "elastic.out(1, 0.45)",
-            scrollTrigger: { trigger: ".tags", start: "top 80%", toggleActions: "play none none reverse" },
-          },
-        );
+      q(".tag").forEach((tag, i) => {
+        const t = tag as HTMLElement;
+        gsap.from(t, {
+          y: -520,
+          opacity: 0,
+          duration: 1.6,
+          delay: 0.3 + i * 0.12,
+          ease: "elastic.out(1, 0.5)",
+          scrollTrigger: { trigger: ".tags", start: "top 80%", toggleActions: "play none none reverse" },
+        });
+        // a slow breeze
         gsap.to(t.querySelector(".tag-swing"), {
-          rotation: gsap.utils.random(2.5, 4.5) * (i % 2 ? 1 : -1),
-          duration: gsap.utils.random(2.2, 3.4),
+          rotation: gsap.utils.random(1.6, 2.6) * (i % 2 ? 1 : -1),
+          duration: gsap.utils.random(2.6, 3.6),
           yoyo: true,
           repeat: -1,
           ease: "sine.inOut",
         });
-        const hover = t.querySelector(".tag-hover");
-        t.addEventListener("pointerenter", () => {
-          gsap.killTweensOf(hover);
-          gsap.fromTo(
-            hover,
-            { rotation: 0 },
-            { keyframes: { rotation: [14, -10, 6, -3, 0] }, duration: 1.4, ease: "sine.out" },
-          );
+        // the tag leans smoothly with the cursor; the hit area (li) never moves, so it can't jitter
+        const hover = t.querySelector(".tag-hover") as HTMLElement;
+        const lean = gsap.quickTo(hover, "rotation", { duration: 0.7, ease: "power3.out" });
+        const onPMove = (e: PointerEvent) => {
+          const r = t.getBoundingClientRect();
+          const nx = (e.clientX - (r.left + r.width / 2)) / r.width; // -0.5 … 0.5
+          lean(gsap.utils.clamp(-12, 12, -nx * 24));
+        };
+        const onLeave = () => {
+          gsap.to(hover, { rotation: 0, duration: 1.8, ease: "elastic.out(1, 0.4)", overwrite: true });
+        };
+        t.addEventListener("pointermove", onPMove);
+        t.addEventListener("pointerleave", onLeave);
+        cleanups.push(() => {
+          t.removeEventListener("pointermove", onPMove);
+          t.removeEventListener("pointerleave", onLeave);
         });
       });
 
@@ -350,10 +441,16 @@ export default function Forest() {
       });
       gsap.to(".sign-float", { y: -10, rotation: 0.6, duration: 2.8, yoyo: true, repeat: -1, ease: "sine.inOut" });
 
-      return () => window.removeEventListener("pointermove", onMove);
+      // triggers were created top-down per feature, not in page order: re-sort so the pins are measured first
+      ScrollTrigger.sort();
+      ScrollTrigger.refresh();
+
+      return () => cleanups.forEach((c) => c());
     },
     { scope: root },
   );
+
+  const workItems = [...projects.map((p) => ({ kind: "project" as const, p })), { kind: "more" as const }];
 
   return (
     <div ref={root}>
@@ -367,6 +464,7 @@ export default function Forest() {
           <Image key={i} src="/img/leaf.webp" alt="" width={240} height={111} className="leaf" />
         ))}
       </div>
+      <div aria-hidden className="screen-flash pointer-events-none fixed inset-0 z-[70] bg-white opacity-0" />
 
       {/* top bar */}
       <header className="fixed inset-x-0 top-0 z-50">
@@ -421,7 +519,7 @@ export default function Forest() {
               </div>
             </div>
 
-            <div className="polaroid-wrap relative z-10 mx-auto w-[min(380px,80vw)]">
+            <div className="polaroid-wrap relative z-10 mx-auto w-[min(400px,82vw)]">
               <div className="polaroid-drop" style={{ perspective: 1200 }}>
                 <div className="polaroid-sway origin-[50%_-24px]">
                   <div className="polaroid-tilt preserve-3d">
@@ -430,14 +528,25 @@ export default function Forest() {
                       className="twig-pin absolute -top-5 left-[18%] z-10 h-3.5 w-[40%] -rotate-[14deg] rounded-full bg-[linear-gradient(90deg,#5b3b1e,#8a5d33_40%,#5b3b1e)] shadow-[0_8px_10px_rgba(0,0,0,.45)]"
                     />
                     <div className="polaroid-card paper lift backface-hidden p-4 pb-0">
-                      <Image
-                        src="/img/avatar.webp"
-                        alt="Illustrated avatar of Dev Aryan waving"
-                        width={800}
-                        height={800}
-                        priority
-                        className="w-full"
-                      />
+                      {/* the photo is a tiny film: Dev keeps snapping pictures */}
+                      <div
+                        className="photo-dev relative aspect-square overflow-hidden"
+                        role="img"
+                        aria-label="Animated avatar of Dev Aryan taking a photo with an instant camera"
+                      >
+                        <Image src="/img/photo-bg.webp" alt="" fill sizes="400px" priority className="object-cover" />
+                        <div className="photo-person absolute bottom-0 left-1/2 h-[94%] origin-bottom -translate-x-1/2">
+                          <Image src="/img/pose-camera.webp" alt="" width={503} height={700} priority className="h-full w-auto max-w-none" />
+                          <span
+                            aria-hidden
+                            className="lens-flash absolute left-[40.5%] top-[24.7%] -ml-10 -mt-10 h-20 w-20 scale-0 rounded-full bg-[radial-gradient(circle,#fff_0%,rgba(255,255,240,.85)_25%,rgba(255,255,220,0)_70%)]"
+                          />
+                        </div>
+                        <span aria-hidden className="photo-flash absolute inset-0 bg-white opacity-0" />
+                        <p className="psst absolute bottom-3 right-3 -rotate-6 rounded-md bg-[rgba(20,30,10,.55)] px-2.5 py-1 font-[family-name:var(--font-hand)] text-2xl font-bold leading-none text-[#f6ff7a] backdrop-blur-sm">
+                          psst… scroll to flip me
+                        </p>
+                      </div>
                       <p className="py-3 text-center font-[family-name:var(--font-hand)] text-4xl font-bold">
                         hi, I&apos;m Dev <span className="wave">👋</span>
                       </p>
@@ -486,11 +595,11 @@ export default function Forest() {
               </div>
               <div className="flex flex-col items-center gap-5 border-[#cbbf9f] md:border-l md:border-dashed md:pl-7">
                 <Image
-                  src="/img/avatar.webp"
+                  src="/img/avatar-head.webp"
                   alt=""
                   width={170}
                   height={170}
-                  className="notes-row h-[170px] w-[170px] rounded-full border-[6px] border-white object-cover object-[50%_15%] shadow-lg"
+                  className="notes-row h-[170px] w-[170px] rounded-full border-[6px] border-white object-cover shadow-lg"
                 />
                 <p className="notes-row text-center font-[family-name:var(--font-hand)] text-3xl leading-tight text-[#5b4a2a]">
                   specimen:
@@ -515,90 +624,84 @@ export default function Forest() {
           </p>
         </section>
 
-        {/* 3. Work: specimen cards slide past sideways */}
-        <section id="work" className="relative lg:h-screen lg:overflow-hidden">
-          <div className="work-track flex flex-col gap-12 px-5 py-24 lg:h-full lg:w-max lg:flex-row lg:items-center lg:gap-16 lg:px-[6vw] lg:py-0">
-            <div className="shrink-0 lg:w-[30vw]">
-              <SectionTitle kick="found while walking the forest" title="Selected work" />
-              <p className="mt-4 max-w-sm text-lg text-white/85">
-                Three health-tech products I designed, built and deployed end to end.
-              </p>
-              <p className="mt-6 hidden font-[family-name:var(--font-hand)] text-3xl text-lime lg:block">keep scrolling →</p>
-            </div>
+        {/* 3. Work: a focus carousel on desktop, a stack of cards on phones */}
+        <section id="work" className="relative lg:flex lg:h-screen lg:flex-col lg:items-center lg:overflow-hidden lg:pt-20">
+          <div className="px-5 pt-24 lg:px-0 lg:pt-0">
+            <SectionTitle kick="found while walking the forest" title="Selected work" center />
+          </div>
 
-            {projects.map((p, i) => (
-              <article
-                key={p.name}
-                className="specimen paper lift relative w-full max-w-md shrink-0 self-center p-4 pb-6 lg:w-[400px]"
-                style={{ rotate: `${[-2.5, 1.5, -1][i]}deg` }}
-              >
-                <div className="relative h-56 overflow-hidden border border-[#d8ccab] xl:h-64">
-                  <Image src={p.plate} alt={`Engraved illustration for ${p.name}`} fill sizes="400px" className="object-cover object-[50%_35%]" />
-                </div>
-                <Image
-                  src={p.shot}
-                  alt={`Screenshot of the live ${p.name} app`}
-                  width={640}
-                  height={420}
-                  className="shot absolute -right-4 top-40 w-36 rotate-[7deg] border-[5px] border-white shadow-[0_8px_14px_rgba(0,0,0,.35)] xl:top-48"
-                />
-                <p className="mt-4 text-[11px] tracking-[0.3em] text-[#8a7d5a]">SPECIMEN NO. {p.no}</p>
-                <h3 className="font-serif text-4xl font-bold leading-tight">{p.name}</h3>
-                <p className="font-serif italic text-[#6d644c]">{p.latin}</p>
-                <p className="mt-3 text-[15px] leading-relaxed">{p.summary}</p>
-                <ul className="mt-3 space-y-1.5 text-sm">
-                  {p.highlights.map((h) => (
-                    <li key={h} className="flex gap-2">
-                      <span aria-hidden className="text-moss">
-                        ❧
-                      </span>
-                      {h}
-                    </li>
-                  ))}
-                </ul>
-                <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="Tech stack">
-                  {p.stack.map((s) => (
-                    <li key={s} className="rounded-full border border-[#b9ac88] px-2.5 py-0.5 text-xs">
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-5 flex gap-5 font-bold text-moss">
-                  <a href={p.live} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">
-                    Live demo ↗
+          <div className="wtrack relative mt-12 flex flex-col items-center gap-12 px-5 pb-24 lg:mt-6 lg:h-[46vh] lg:w-full lg:flex-none lg:gap-0 lg:p-0">
+            {workItems.map((w, i) =>
+              w.kind === "project" ? (
+                <article
+                  key={w.p.name}
+                  className="wcard paper lift relative w-full max-w-md p-4 pb-5 lg:absolute lg:left-1/2 lg:top-1/2 lg:-ml-[150px] lg:-mt-[clamp(160px,21vh,220px)] lg:w-[300px]"
+                  style={{ rotate: `${[-2, 1.5][i] ?? 0}deg` }}
+                >
+                  <div className="relative h-56 overflow-hidden border border-[#d8ccab] lg:h-[clamp(150px,22vh,230px)]">
+                    <Image src={w.p.plate} alt={`Engraved illustration for ${w.p.name}`} fill sizes="320px" className="object-cover object-[50%_35%]" />
+                  </div>
+                  <Image
+                    src={w.p.shot}
+                    alt={`Screenshot of the live ${w.p.name} app`}
+                    width={640}
+                    height={420}
+                    className="absolute -right-5 top-36 w-32 rotate-[7deg] border-[5px] border-white shadow-[0_8px_14px_rgba(0,0,0,.35)] lg:top-[clamp(100px,16vh,170px)] lg:w-28"
+                  />
+                  <p className="mt-3 text-[11px] tracking-[0.3em] text-[#8a7d5a]">SPECIMEN NO. {w.p.no}</p>
+                  <h3 className="font-serif text-3xl font-bold leading-tight">{w.p.name}</h3>
+                  <p className="font-serif italic text-[#6d644c]">{w.p.latin}</p>
+                  {/* on phones the details live inside the card */}
+                  <div className="mt-3 lg:hidden">
+                    <ProjectDetails p={w.p} />
+                  </div>
+                </article>
+              ) : (
+                <div
+                  key="more"
+                  className="wcard glass flex w-full max-w-md flex-col items-start justify-center gap-4 rounded-3xl p-8 lg:absolute lg:left-1/2 lg:top-1/2 lg:-ml-[150px] lg:-mt-[clamp(140px,19vh,200px)] lg:h-[clamp(280px,38vh,400px)] lg:w-[300px]"
+                >
+                  <p className="font-[family-name:var(--font-hand)] text-4xl font-bold text-lime">more in the undergrowth…</p>
+                  <p className="text-white/85">Simulators, backends and experiments live on my GitHub.</p>
+                  <a href={GITHUB} target="_blank" rel="noreferrer" className={btnLight}>
+                    Open GitHub ↗
                   </a>
-                  {p.code && (
-                    <a href={p.code} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">
-                      GitHub ↗
-                    </a>
-                  )}
                 </div>
-              </article>
-            ))}
+              ),
+            )}
+          </div>
 
-            <div className="specimen glass flex w-full max-w-md shrink-0 flex-col items-start justify-center gap-4 self-center rounded-3xl p-8 lg:h-[420px] lg:w-[320px]">
-              <p className="font-[family-name:var(--font-hand)] text-4xl font-bold text-lime">more in the undergrowth…</p>
-              <p className="text-white/85">Simulators, backends and experiments live on my GitHub.</p>
-              <a href={GITHUB} target="_blank" rel="noreferrer" className={btnLight}>
-                Open GitHub ↗
-              </a>
-            </div>
+          {/* desktop: details of the card in focus */}
+          <div className="relative hidden w-full max-w-3xl flex-1 lg:block">
+            {workItems.map((w) =>
+              w.kind === "project" ? (
+                <div key={w.p.name} className="wdetail paper lift absolute inset-x-0 top-4 mx-auto max-w-3xl rounded-sm px-8 py-5">
+                  <ProjectDetails p={w.p} compact />
+                </div>
+              ) : (
+                <div key="more" className="wdetail absolute inset-x-0 top-6 text-center">
+                  <p className="font-[family-name:var(--font-hand)] text-3xl text-lime [text-shadow:0_2px_10px_rgba(0,0,0,.6)]">
+                    that&apos;s the clearing. keep walking for the trail markers ↓
+                  </p>
+                </div>
+              ),
+            )}
           </div>
         </section>
 
-        {/* 4. Experience: boards fall onto the moss */}
+        {/* 4. Experience: boards fall onto the moss; each line sits on its own plank */}
         <section id="experience" className="mx-auto max-w-7xl px-5 py-28 lg:px-12">
           <SectionTitle kick="trail markers so far" title="Experience" />
           <ol className="mt-12 grid gap-16 lg:grid-cols-2">
             {experience.map((e, i) => (
               <li key={e.company}>
                 <div
-                  className="board flex aspect-[1340/715] flex-col items-center justify-center bg-[url(/img/board.webp)] bg-[length:100%_100%] text-center drop-shadow-[0_22px_18px_rgba(0,0,0,.6)]"
+                  className={`board @container grid aspect-[1340/715] ${PLANKS} items-center bg-[url(/img/board.webp)] bg-[length:100%_100%] text-center drop-shadow-[0_22px_18px_rgba(0,0,0,.6)]`}
                   style={{ rotate: `${i ? 2 : -2}deg` }}
                 >
-                  <h3 className="burn font-serif text-5xl font-extrabold tracking-tight sm:text-6xl">{e.company}</h3>
-                  <p className="burn font-serif text-xl font-semibold italic sm:text-2xl">{e.role}</p>
-                  <p className="burn mt-2 text-sm font-bold tracking-[0.15em]">
+                  <h3 className="burn font-serif text-[10cqw] font-extrabold leading-none tracking-tight">{e.company}</h3>
+                  <p className="burn font-serif text-[5cqw] font-semibold italic leading-none">{e.role}</p>
+                  <p className="burn text-[3.1cqw] font-bold leading-none tracking-[0.15em]">
                     {e.when.toUpperCase()} · {e.where.toUpperCase()}
                   </p>
                 </div>
@@ -627,27 +730,39 @@ export default function Forest() {
               alt=""
               width={1484}
               height={167}
-              className="twig absolute left-0 top-0 hidden w-full drop-shadow-[0_10px_8px_rgba(0,0,0,.6)] lg:block"
+              className="twig absolute left-0 top-0 z-10 hidden w-full drop-shadow-[0_10px_8px_rgba(0,0,0,.6)] lg:block"
             />
-            <ul className="grid grid-cols-2 justify-items-center gap-x-4 gap-y-10 pt-6 sm:grid-cols-3 lg:flex lg:justify-between lg:gap-6 lg:pt-12">
+            <ul className="grid grid-cols-2 justify-items-center gap-x-4 gap-y-10 pt-6 sm:grid-cols-3 lg:flex lg:justify-between lg:gap-6 lg:pt-40">
               {skills.map((s) => (
-                <li key={s.group} className="tag relative w-[160px] origin-top sm:w-[200px]">
-                  <div className="tag-swing origin-top">
-                    <div className="tag-hover origin-top drop-shadow-[0_18px_14px_rgba(0,0,0,.6)]">
-                      <span aria-hidden className="absolute -top-12 left-1/2 hidden h-14 w-0.5 bg-[#d9c7a0] lg:block" />
-                      <div className="flex aspect-[420/1226] flex-col items-center bg-[url(/img/tag.webp)] bg-[length:100%_100%] px-3 pt-[4.6rem] text-center sm:px-4 sm:pt-24">
-                        <p className="text-[11px] tracking-[0.3em] text-[#8a6b3e]">VARIETY</p>
-                        <h3 className="mb-3 w-full border-b border-[#50321433] pb-2 font-serif text-xl font-extrabold text-[#2e1f0c] sm:text-2xl">
-                          {s.group}
-                        </h3>
-                        {s.items.map((it) => (
-                          <p
-                            key={it}
-                            className="font-[family-name:var(--font-hand)] text-[21px] leading-tight text-[#3b2a14] sm:text-[27px]"
-                          >
-                            {it}
-                          </p>
-                        ))}
+                <li key={s.group} className="tag relative w-[160px] sm:w-[200px]">
+                  <div className="tag-swing" style={{ transformOrigin: "50% calc(-1 * var(--th, 0px))" }}>
+                    <div className="tag-hover" style={{ transformOrigin: "50% calc(-1 * var(--th, 0px))" }}>
+                      {/* the thread: from the twig down to the tag, then through the hole */}
+                      <span
+                        aria-hidden
+                        className="absolute left-1/2 hidden w-[2px] -translate-x-1/2 rounded bg-[#e2d3b0] shadow-[0_2px_3px_rgba(0,0,0,.35)] lg:block"
+                        style={{ top: "calc(-1 * var(--th, 0px))", height: "var(--th, 0px)" }}
+                      />
+                      <div className="relative drop-shadow-[0_18px_14px_rgba(0,0,0,.6)]">
+                        <span
+                          aria-hidden
+                          className="absolute left-1/2 top-0 hidden w-[2px] -translate-x-1/2 bg-[#e2d3b0] lg:block"
+                          style={{ height: `${TAG_HOLE * 100}%` }}
+                        />
+                        <div className="flex aspect-[420/1226] flex-col items-center bg-[url(/img/tag.webp)] bg-[length:100%_100%] px-3 pt-[4.6rem] text-center sm:px-4 sm:pt-24">
+                          <p className="text-[11px] tracking-[0.3em] text-[#8a6b3e]">VARIETY</p>
+                          <h3 className="mb-3 w-full border-b border-[#50321433] pb-2 font-serif text-xl font-extrabold text-[#2e1f0c] sm:text-2xl">
+                            {s.group}
+                          </h3>
+                          {s.items.map((it) => (
+                            <p
+                              key={it}
+                              className="font-[family-name:var(--font-hand)] text-[21px] leading-tight text-[#3b2a14] sm:text-[27px]"
+                            >
+                              {it}
+                            </p>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -657,19 +772,15 @@ export default function Forest() {
           </div>
         </section>
 
-        {/* 6. Contact: the sign rises out of the moss */}
+        {/* 6. Contact: the sign rises out of the moss; each line on its own plank */}
         <section id="contact" className="mx-auto flex min-h-svh max-w-5xl flex-col items-center justify-center px-5 py-24">
           <div className="sign w-full">
-            <div className="sign-float flex aspect-[1340/715] w-full -rotate-[1.5deg] flex-col items-center justify-center bg-[url(/img/board.webp)] bg-[length:100%_100%] px-6 text-center drop-shadow-[0_30px_24px_rgba(0,0,0,.65)]">
-              <h2 className="burn font-serif text-[clamp(1.9rem,6.4vw,4.75rem)] font-extrabold leading-none tracking-tight">
-                Let&apos;s build something
-                <br />
-                <i className="font-semibold">that matters.</i>
-              </h2>
-              <a
-                href={`mailto:${EMAIL}`}
-                className="burn mt-4 font-serif text-[clamp(1rem,2.6vw,1.9rem)] font-extrabold hover:underline sm:mt-6"
-              >
+            <div
+              className={`sign-float @container grid aspect-[1340/715] w-full -rotate-[1.5deg] ${PLANKS} items-center bg-[url(/img/board.webp)] bg-[length:100%_100%] px-[6%] text-center drop-shadow-[0_30px_24px_rgba(0,0,0,.65)]`}
+            >
+              <h2 className="burn font-serif text-[7.4cqw] font-extrabold leading-none tracking-tight">Let&apos;s build something</h2>
+              <p className="burn font-serif text-[8.2cqw] font-semibold italic leading-none">that matters.</p>
+              <a href={`mailto:${EMAIL}`} className="burn font-serif text-[4.4cqw] font-extrabold leading-none hover:underline">
                 {EMAIL}
               </a>
             </div>
