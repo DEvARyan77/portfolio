@@ -1,481 +1,320 @@
 import Image from "next/image";
+import CopyEmail from "@/components/CopyEmail";
+import Polaroid from "@/components/Polaroid";
+import { EMAIL, GITHUB, LINKEDIN, experience, projects, skills } from "@/data";
 
-const EMAIL = "devaryan7766@gmail.com";
-const GITHUB = "https://github.com/DEvARyan77";
-const LINKEDIN = "https://www.linkedin.com/in/dev-aryan-b11b58433";
+const btnLight = "inline-block rounded-full bg-[#f4efe2] px-6 py-3.5 font-semibold text-[#1f2a17] transition hover:bg-white";
+const btnGlass = "glass inline-block rounded-full px-6 py-3.5 font-semibold text-white transition hover:bg-white/25";
 
-type Project = {
-  name: string;
-  tagline: string;
-  summary: string;
-  highlights: string[];
-  stack: string[];
-  links: { label: string; href: string }[];
-  bg: string;
-  chip: string;
-  visual: React.ReactNode;
-};
-
-const projects: Project[] = [
-  {
-    name: "ClaimFlow",
-    tagline: "Health-insurance claims, decided in seconds",
-    summary:
-      "Policyholders and hospitals file claims. ClaimFlow checks the policy, the hospital network and the cover left, scores fraud risk with rules that explain themselves, and sends risky claims to an officer with an AI summary. A policy assistant answers questions about an uploaded policy PDF and cites the page.",
-    highlights: [
-      "Four sign-in roles, with JWT and role checks at the API gateway",
-      "Atomic MongoDB updates, so 40 claims fired at once never overspend a policy",
-      "RabbitMQ events for payouts and emails, and a claim is never paid twice",
-      "Circuit breakers park a claim when a service is down and retry it later",
-      "RAG over policy PDFs with Atlas Vector Search and Gemini",
-    ],
-    stack: [
-      "Java 21",
-      "Spring Boot",
-      "Spring Cloud",
-      "MongoDB",
-      "RabbitMQ",
-      "React",
-      "Docker",
-    ],
-    links: [{ label: "Code on GitHub", href: `${GITHUB}/claimflow` }],
-    bg: "bg-pink",
-    chip: "bg-ink text-pink",
-    visual: <ClaimFlowShots />,
-  },
-  {
-    name: "MediSync",
-    tagline: "A hospital OPD, pharmacy and ambulance in one app",
-    summary:
-      "Patients book OPD slots and get a token. Reception runs the queue, doctors record vitals and write e-prescriptions, the pharmacy dispenses, and patients can call an ambulance and watch it move on a map.",
-    highlights: [
-      "Six roles: patient, receptionist, doctor, pharmacist, driver, admin",
-      "Nearby ambulances found with MongoDB geo queries",
-      "Live driver location on Leaflet and OpenStreetMap",
-      "Clinic time zone rules, so past slots can never be booked",
-    ],
-    stack: [
-      "TypeScript",
-      "React",
-      "Vite",
-      "Tailwind",
-      "Node.js",
-      "Express",
-      "MongoDB",
-    ],
-    links: [{ label: "Code on GitHub", href: `${GITHUB}/medisync` }],
-    bg: "bg-mint",
-    chip: "bg-ink text-mint",
-    visual: <TokenBoard />,
-  },
-  {
-    name: "DocOnGo",
-    tagline: "An AI doctor you can talk to",
-    summary:
-      "Describe what you feel in a chat and DocOnGo walks through an examination, then suggests what it could be and what to do next. Chat requests run on serverless functions for quick replies.",
-    highlights: [
-      "Real-time AI chat on Next.js API routes",
-      "Accounts secured with JWT and bcrypt",
-      "Deployed on Vercel's serverless platform",
-    ],
-    stack: ["React", "Next.js", "Node.js", "MongoDB", "JWT"],
-    links: [{ label: "Try it live", href: "https://docongoai.vercel.app/" }],
-    bg: "bg-yellow",
-    chip: "bg-ink text-yellow",
-    visual: <ChatMock />,
-  },
-];
-
-const experience = [
-  {
-    company: "Emvoke",
-    role: "Full-stack web developer",
-    when: "Jun 2025 – Jul 2025",
-    what: "Built the FitPlush clinic app website and connected its UI to the APIs and database behind it.",
-    href: "https://www.clinicapp.fitplush.com/",
-    site: "clinicapp.fitplush.com",
-  },
-  {
-    company: "PocketClass",
-    role: "Full-stack web developer",
-    when: "Mar 2025 – Jun 2025",
-    what: "Built the official PocketClass website from scratch, across the responsive frontend, the server logic and the database.",
-    href: "https://pocketclass.ca",
-    site: "pocketclass.ca",
-  },
-];
-
-const skills = [
-  { group: "Languages", items: ["Java", "TypeScript", "JavaScript", "Python", "C"] },
-  {
-    group: "Backend",
-    items: ["Spring Boot", "Spring Cloud", "Node.js", "Express", "RabbitMQ", "REST APIs"],
-  },
-  { group: "Frontend", items: ["React", "Next.js", "Vite", "Tailwind CSS", "HTML", "CSS"] },
-  { group: "Data", items: ["MongoDB", "MySQL", "Atlas Vector Search"] },
-  { group: "AI", items: ["RAG", "Gemini API", "Embeddings"] },
-  { group: "Tools", items: ["Git", "Docker", "Vercel", "Render"] },
-];
-
-export default function Home() {
+function Scene({
+  id,
+  bg = "none",
+  shade = "rgba(0,0,0,.45)",
+  children,
+  className = "",
+}: {
+  id?: string;
+  bg?: string;
+  shade?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <>
-      <a
-        href="#work"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-yellow focus:px-4 focus:py-2"
-      >
-        Skip to work
-      </a>
-
-      {/* Hero */}
-      <header className="relative overflow-hidden bg-blue text-paper">
-        <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-          <a href="#" className="font-display text-lg font-bold text-yellow">
-            dev.aryan
-          </a>
-          <ul className="flex gap-6 text-sm font-medium sm:gap-8">
-            <li><a className="hover:text-yellow" href="#work">Work</a></li>
-            <li><a className="hover:text-yellow" href="#experience">Experience</a></li>
-            <li><a className="hover:text-yellow" href="#contact">Contact</a></li>
-          </ul>
-        </nav>
-
-        <div className="mx-auto max-w-6xl px-6 pb-20 pt-10 sm:pb-28 sm:pt-16">
-          <h1 className="font-display font-bold leading-[0.85] tracking-[-0.04em] text-yellow text-[clamp(4.5rem,17vw,13rem)]">
-            <span className="block overflow-hidden">
-              <span className="rise">Dev</span>
-            </span>
-            <span className="block overflow-hidden">
-              <span className="rise [animation-delay:120ms]">Aryan</span>
-            </span>
-          </h1>
-
-          <div className="mt-10 grid gap-8 sm:mt-14 md:grid-cols-[1fr_auto] md:items-end">
-            <p className="max-w-xl text-xl leading-relaxed sm:text-2xl">
-              Full-stack developer. I build health-tech software: insurance
-              claims, hospital OPDs, prescriptions and ambulances, from Spring
-              Boot microservices to React screens.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <a
-                href="#work"
-                className="rounded-full bg-yellow px-6 py-3 font-display font-bold text-ink transition hover:bg-paper"
-              >
-                See my work
-              </a>
-              <a
-                href={`mailto:${EMAIL}`}
-                className="rounded-full border-2 border-paper px-6 py-3 font-display font-bold transition hover:bg-paper hover:text-blue"
-              >
-                Email me
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* colour bar: one stripe per project */}
-        <div className="flex h-4" aria-hidden>
-          <div className="flex-1 bg-pink" />
-          <div className="flex-1 bg-mint" />
-          <div className="flex-1 bg-yellow" />
-        </div>
-      </header>
-
-      <main>
-        {/* About */}
-        <section className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-[1fr_1.4fr] md:py-28">
-          <h2 className="font-display text-4xl font-bold leading-tight sm:text-5xl">
-            Software where mistakes cost money or health.
-          </h2>
-          <div className="space-y-5 text-lg leading-relaxed text-ink/80">
-            <p>
-              I&apos;m Dev, a 2026 B.Tech graduate of Delhi Technological
-              University. Most of what I build lives in healthcare: a claims
-              platform that has to stay correct when forty requests hit it at
-              once, an OPD that has to keep a queue moving, an ambulance that
-              has to show up on the right map.
-            </p>
-            <p>
-              I work end to end. I design the services and the data, write the
-              APIs, and build the screens people actually click.
-            </p>
-          </div>
-        </section>
-
-        {/* Projects */}
-        <section id="work" aria-labelledby="work-title" className="scroll-mt-4">
-          <h2 id="work-title" className="sr-only">
-            Projects
-          </h2>
-          {projects.map((p) => (
-            <article key={p.name} className={`${p.bg} text-ink`}>
-              <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 lg:grid-cols-2 lg:items-center lg:py-24">
-                <div>
-                  <h3 className="font-display text-6xl font-bold tracking-[-0.03em] sm:text-7xl">
-                    {p.name}
-                  </h3>
-                  <p className="mt-3 font-display text-2xl font-medium">
-                    {p.tagline}
-                  </p>
-                  <p className="mt-6 max-w-[60ch] text-lg leading-relaxed">
-                    {p.summary}
-                  </p>
-                  <ul className="mt-6 space-y-2">
-                    {p.highlights.map((h) => (
-                      <li key={h} className="flex gap-3 leading-relaxed">
-                        <span aria-hidden className="mt-2.5 h-2 w-2 shrink-0 rounded-full bg-ink" />
-                        {h}
-                      </li>
-                    ))}
-                  </ul>
-                  <ul className="mt-8 flex flex-wrap gap-2" aria-label="Tech stack">
-                    {p.stack.map((s) => (
-                      <li
-                        key={s}
-                        className={`rounded-md px-3 py-1 text-sm font-semibold ${p.chip}`}
-                      >
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-8 flex flex-wrap gap-3">
-                    {p.links.map((l) => (
-                      <a
-                        key={l.href}
-                        href={l.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-full bg-ink px-6 py-3 font-display font-bold text-paper transition hover:bg-blue"
-                      >
-                        {l.label}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-                <div>{p.visual}</div>
-              </div>
-            </article>
-          ))}
-          <div className="bg-ink py-10 text-center text-paper">
-            <a
-              href={GITHUB}
-              target="_blank"
-              rel="noreferrer"
-              className="font-display text-xl font-bold underline decoration-yellow decoration-4 underline-offset-8 hover:text-yellow"
-            >
-              More projects on GitHub
-            </a>
-          </div>
-        </section>
-
-        {/* Experience + education */}
-        <section
-          id="experience"
-          className="mx-auto max-w-6xl scroll-mt-4 px-6 py-20 md:py-28"
-        >
-          <h2 className="font-display text-4xl font-bold sm:text-5xl">
-            Experience
-          </h2>
-          <ol className="mt-12 border-l-4 border-blue">
-            {experience.map((e) => (
-              <li key={e.company} className="relative pb-12 pl-8 last:pb-0">
-                <span
-                  aria-hidden
-                  className="absolute -left-[14px] top-1.5 h-6 w-6 rounded-full border-4 border-paper bg-blue"
-                />
-                <p className="text-sm font-semibold text-blue">{e.when}</p>
-                <h3 className="mt-1 font-display text-3xl font-bold">
-                  {e.company}
-                </h3>
-                <p className="font-medium text-ink/70">{e.role}</p>
-                <p className="mt-3 max-w-[65ch] text-lg leading-relaxed">
-                  {e.what}{" "}
-                  <a
-                    href={e.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-semibold text-blue underline underline-offset-4"
-                  >
-                    {e.site}
-                  </a>
-                </p>
-              </li>
-            ))}
-          </ol>
-
-          <div className="mt-20 grid gap-6 rounded-3xl bg-blue p-8 text-paper sm:p-10 md:grid-cols-[1fr_auto] md:items-center">
-            <div>
-              <h2 className="font-display text-3xl font-bold">Education</h2>
-              <p className="mt-3 text-lg">
-                B.Tech, Delhi Technological University (formerly DCE), New Delhi
-              </p>
-            </div>
-            <div className="flex gap-8 font-display">
-              <p>
-                <span className="block text-4xl font-bold text-yellow">2026</span>
-                <span className="text-sm">graduated</span>
-              </p>
-              <p>
-                <span className="block text-4xl font-bold text-yellow">8.16</span>
-                <span className="text-sm">CGPA out of 10</span>
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Skills */}
-        <section className="bg-ink py-20 text-paper md:py-28">
-          <div className="mx-auto max-w-6xl px-6">
-            <h2 className="font-display text-4xl font-bold sm:text-5xl">
-              What I work with
-            </h2>
-            <dl className="mt-12 divide-y divide-paper/15">
-              {skills.map((s) => (
-                <div
-                  key={s.group}
-                  className="grid gap-3 py-5 sm:grid-cols-[10rem_1fr] sm:items-baseline"
-                >
-                  <dt className="font-display text-lg font-bold text-mint">
-                    {s.group}
-                  </dt>
-                  <dd className="text-xl leading-relaxed">
-                    {s.items.join(", ")}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </section>
-      </main>
-
-      {/* Contact */}
-      <footer id="contact" className="scroll-mt-4 bg-pink text-ink">
-        <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-          <h2 className="font-display text-5xl font-bold leading-[0.95] tracking-[-0.03em] sm:text-7xl">
-            Hiring, or building something?
-          </h2>
-          <p className="mt-6 max-w-xl text-xl">
-            I&apos;m open to software engineering roles. Email is the fastest
-            way to reach me.
-          </p>
-          <a
-            href={`mailto:${EMAIL}`}
-            className="mt-10 inline-block break-all font-display text-2xl font-bold underline decoration-4 underline-offset-8 hover:text-blue sm:text-4xl"
-          >
-            {EMAIL}
-          </a>
-          <div className="mt-10 flex flex-wrap gap-3">
-            <a
-              href={GITHUB}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full bg-ink px-6 py-3 font-display font-bold text-paper hover:bg-blue"
-            >
-              GitHub
-            </a>
-            <a
-              href={LINKEDIN}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full bg-ink px-6 py-3 font-display font-bold text-paper hover:bg-blue"
-            >
-              LinkedIn
-            </a>
-          </div>
-          <p className="mt-20 text-sm text-ink/70">
-            © 2026 Dev Aryan. Built with Next.js.
-          </p>
-        </div>
-      </footer>
-    </>
+    <section id={id} className={`scene scroll-mt-0 ${className}`}>
+      <div aria-hidden className="scene-bg" style={{ transform: bg }} />
+      <div aria-hidden className="scene-shade" style={{ background: shade }} />
+      {children}
+    </section>
   );
 }
 
-function ClaimFlowShots() {
+function SectionTitle({ kick, title }: { kick: string; title: string }) {
   return (
-    <div className="relative pb-16 sm:pb-24">
-      <Image
-        src="/projects/my-claims.png"
-        alt="ClaimFlow: a policyholder's list of claims with their status"
-        width={1280}
-        height={905}
-        className="w-full rounded-2xl border-4 border-ink shadow-[10px_10px_0_0_var(--color-ink)]"
-        priority
-      />
-      <Image
-        src="/projects/officer-review.png"
-        alt="ClaimFlow: a claims officer reviewing fraud flags and an AI summary"
-        width={1366}
-        height={1071}
-        className="absolute -bottom-2 right-0 w-1/2 rounded-xl border-4 border-ink shadow-[8px_8px_0_0_var(--color-ink)] sm:-right-4"
-      />
+    <div>
+      <p className="kick text-3xl">{kick}</p>
+      <h2 className="heading text-6xl sm:text-8xl">{title}</h2>
     </div>
   );
 }
 
-function TokenBoard() {
-  const queue = [
-    { t: "A-5", who: "Checked in", doc: "Dr. Mehra" },
-    { t: "A-6", who: "Checked in", doc: "Dr. Mehra" },
-    { t: "B-2", who: "Waiting", doc: "Dr. Khan" },
-    { t: "A-7", who: "Booked 11:30", doc: "Dr. Mehra" },
-  ];
+export default function Home() {
   return (
-    <figure
-      className="rounded-3xl border-4 border-ink bg-ink p-6 text-paper shadow-[10px_10px_0_0_rgba(21,18,46,0.35)] sm:p-8"
-      aria-label="Illustration of the MediSync OPD token queue"
-    >
-      <p className="text-sm font-semibold text-mint">OPD queue today</p>
-      <div className="mt-4 flex items-end justify-between gap-4 rounded-2xl bg-mint p-6 text-ink">
-        <div>
-          <p className="text-sm font-semibold">Now serving</p>
-          <p className="font-display text-7xl font-bold leading-none">A-4</p>
-        </div>
-        <p className="text-right text-sm font-semibold">
-          Room 3
-          <br />
-          Dr. Mehra
-        </p>
-      </div>
-      <ul className="mt-4 divide-y divide-paper/15">
-        {queue.map((q) => (
-          <li key={q.t} className="flex items-center justify-between py-3">
-            <span className="font-display text-2xl font-bold">{q.t}</span>
-            <span className="text-sm text-paper/70">{q.doc}</span>
-            <span className="rounded-full bg-paper/10 px-3 py-1 text-xs font-semibold">
-              {q.who}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <figcaption className="mt-4 flex items-center gap-2 text-sm text-paper/70">
-        <span className="h-2 w-2 rounded-full bg-pink" aria-hidden />
-        Ambulance AMB-2 is 1.8 km away
-      </figcaption>
-    </figure>
-  );
-}
+    <>
+      {/* top bar */}
+      <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-3 px-4 py-4 sm:px-8">
+        <a href="#top" className="font-serif text-2xl font-semibold italic text-white [text-shadow:0_2px_10px_rgba(0,0,0,.5)]">
+          dev.aryan
+        </a>
+        <nav aria-label="Sections" className="glass hidden items-center gap-1 rounded-full p-1.5 text-sm md:flex">
+          {[["Work", "#work"], ["About", "#about"], ["Experience", "#experience"], ["Contact", "#contact"]].map(([l, h]) => (
+            <a key={h} href={h} className="rounded-full px-4 py-2 transition hover:bg-white/20">
+              {l}
+            </a>
+          ))}
+        </nav>
+        <a href="/minimal" className="glass rounded-full px-4 py-2 text-sm font-semibold">
+          Minimal version
+        </a>
+      </header>
 
-function ChatMock() {
-  return (
-    <figure
-      className="space-y-4 rounded-3xl border-4 border-ink bg-paper p-6 shadow-[10px_10px_0_0_var(--color-ink)] sm:p-8"
-      aria-label="Illustration of a DocOnGo chat"
-    >
-      <p className="ml-auto max-w-[85%] rounded-2xl rounded-br-sm bg-blue px-4 py-3 text-paper">
-        I&apos;ve had a headache and a mild fever since yesterday.
-      </p>
-      <p className="max-w-[85%] rounded-2xl rounded-bl-sm bg-ink px-4 py-3 text-paper">
-        I&apos;ll ask a few questions first. Is the headache on one side or
-        all over? Any stiff neck or sensitivity to light?
-      </p>
-      <p className="ml-auto max-w-[85%] rounded-2xl rounded-br-sm bg-blue px-4 py-3 text-paper">
-        All over. No stiff neck.
-      </p>
-      <p className="max-w-[85%] rounded-2xl rounded-bl-sm bg-ink px-4 py-3 text-paper">
-        That sounds most like a common viral fever. Rest, drink fluids, and
-        see a doctor if the fever passes 3 days.
-      </p>
-    </figure>
+      <main>
+        {/* 1. Hero: the photo on the moss */}
+        <Scene id="top" shade="radial-gradient(ellipse at 38% 50%,rgba(0,0,0,.05),rgba(0,0,0,.5) 85%)">
+          <div className="mx-auto grid min-h-svh max-w-7xl items-center gap-12 px-6 pb-24 pt-28 lg:grid-cols-[1.15fr_1fr] lg:px-12">
+            <div className="[text-shadow:0_4px_30px_rgba(0,0,0,.55)]">
+              <p className="glass inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-sm [text-shadow:none]">
+                <span className="dot" aria-hidden />
+                Open to software engineering roles
+              </p>
+              <h1 className="mt-6 font-serif text-[clamp(4.5rem,13vw,10rem)] font-semibold leading-[0.9] tracking-[-0.03em]">
+                Dev
+                <br />
+                <span className="font-normal italic">Aryan</span>
+              </h1>
+              <p className="mt-10 max-w-xl text-xl leading-relaxed text-white/90 sm:text-2xl">
+                Software developer growing AI-native, full-stack systems for healthcare: claims, clinics and care.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3 [text-shadow:none]">
+                <a href="#work" className={btnLight}>
+                  Explore my work
+                </a>
+                <CopyEmail email={EMAIL} className={btnGlass} />
+              </div>
+            </div>
+            <Polaroid />
+          </div>
+          <a
+            href="#about"
+            className="glass absolute bottom-6 left-1/2 hidden -translate-x-1/2 rounded-full px-5 py-2 text-sm lg:block"
+          >
+            Scroll to walk through the forest ↓
+          </a>
+        </Scene>
+
+        {/* 2. About: field notes on the back of the photo */}
+        <Scene id="about" bg="scaleX(-1)" shade="radial-gradient(ellipse at 50% 50%,rgba(0,0,0,.35),rgba(0,0,0,.6))">
+          <div className="mx-auto flex min-h-svh max-w-5xl items-center px-5 py-24">
+            <article className="paper lift grid w-full gap-8 p-7 sm:p-12 md:-rotate-2 md:grid-cols-[1fr_210px]">
+              <div>
+                <p className="text-xs tracking-[0.3em] text-[#8a7d5a]">FIELD NOTES · BACK OF THE PHOTO</p>
+                <h2 className="mt-1 font-[family-name:var(--font-hand)] text-6xl font-bold text-moss">
+                  Hey, I&apos;m Dev <span className="wave">👋</span>
+                </h2>
+                <p className="mt-3 text-lg leading-relaxed">
+                  I build software where mistakes cost money or health. A claims platform that stays correct when 40
+                  requests hit it at once, an OPD that keeps the queue moving, an ambulance that shows up on the right
+                  map. I design the services and the data, write the APIs, and build the screens.
+                </p>
+                <dl className="mt-5">
+                  {[
+                    ["🎓", "Delhi Technological University", "B.Tech, 2022 – 2026 · CGPA 8.16"],
+                    ["📍", "Gurugram, India", "Open to on-site, hybrid and remote"],
+                    ["☁️", "Currently learning", "AWS and cloud deployment"],
+                    ["🧩", "By the numbers", "7 microservices in ClaimFlow · 6 user roles in MediSync"],
+                  ].map(([e, t, d]) => (
+                    <div key={t} className="flex items-center gap-4 border-t border-dashed border-[#cbbf9f] py-3">
+                      <span aria-hidden className="text-2xl">{e}</span>
+                      <div>
+                        <dt className="font-bold">{t}</dt>
+                        <dd className="text-sm text-[#6d644c]">{d}</dd>
+                      </div>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+              <div className="flex flex-col items-center gap-5 border-[#cbbf9f] md:border-l md:border-dashed md:pl-7">
+                <Image
+                  src="/img/avatar.webp"
+                  alt=""
+                  width={170}
+                  height={170}
+                  className="h-[170px] w-[170px] rounded-full border-[6px] border-white object-cover object-[50%_15%] shadow-lg"
+                />
+                <p className="text-center font-[family-name:var(--font-hand)] text-3xl leading-tight text-[#5b4a2a]">
+                  specimen:
+                  <br />
+                  <i>developerus curiosus</i>
+                </p>
+                <p
+                  aria-label="Open to SDE roles, 2026"
+                  className="mt-auto grid h-36 w-36 -rotate-[14deg] place-items-center rounded-full border-[3px] border-double border-[#9b4a2a] text-center font-serif text-sm font-bold tracking-wider text-[#9b4a2a] opacity-80"
+                >
+                  OPEN TO
+                  <br />
+                  SDE ROLES
+                  <br />★ 2026 ★
+                </p>
+              </div>
+            </article>
+          </div>
+        </Scene>
+
+        {/* 3. Work: field-guide specimen cards */}
+        <Scene
+          id="work"
+          bg="scale(1.25) rotate(4deg)"
+          shade="linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.35) 40%,rgba(0,0,0,.5))"
+        >
+          <div className="mx-auto max-w-7xl px-5 py-28 lg:px-12">
+            <SectionTitle kick="found while walking the forest" title="Selected work" />
+            <div className="mt-12 grid gap-10 md:grid-cols-2 lg:grid-cols-3">
+              {projects.map((p, i) => (
+                <article
+                  key={p.name}
+                  className="specimen paper lift relative p-4 pb-6"
+                  style={{ transform: `rotate(${[-2.5, 1.5, -1][i]}deg)` }}
+                >
+                  <div className="relative h-72 overflow-hidden border border-[#d8ccab]">
+                    <Image src={p.plate} alt={`Engraved illustration for ${p.name}`} fill sizes="380px" className="object-cover object-[50%_35%]" />
+                  </div>
+                  <Image
+                    src={p.shot}
+                    alt={`Screenshot of the live ${p.name} app`}
+                    width={640}
+                    height={420}
+                    className="absolute -right-4 top-52 w-36 rotate-[7deg] border-[5px] border-white shadow-[0_8px_14px_rgba(0,0,0,.35)]"
+                  />
+                  <p className="mt-4 text-[11px] tracking-[0.3em] text-[#8a7d5a]">SPECIMEN NO. {p.no}</p>
+                  <h3 className="font-serif text-4xl font-bold leading-tight">{p.name}</h3>
+                  <p className="font-serif italic text-[#6d644c]">{p.latin}</p>
+                  <p className="mt-3 text-[15px] leading-relaxed">{p.summary}</p>
+                  <ul className="mt-3 space-y-1.5 text-sm">
+                    {p.highlights.map((h) => (
+                      <li key={h} className="flex gap-2">
+                        <span aria-hidden className="text-moss">❧</span>
+                        {h}
+                      </li>
+                    ))}
+                  </ul>
+                  <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="Tech stack">
+                    {p.stack.map((s) => (
+                      <li key={s} className="rounded-full border border-[#b9ac88] px-2.5 py-0.5 text-xs">
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-5 flex gap-5 font-bold text-moss">
+                    <a href={p.live} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">
+                      Live demo ↗
+                    </a>
+                    {p.code && (
+                      <a href={p.code} target="_blank" rel="noreferrer" className="underline-offset-4 hover:underline">
+                        GitHub ↗
+                      </a>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+            <p className="mt-14 text-center">
+              <a href={GITHUB} target="_blank" rel="noreferrer" className={btnGlass}>
+                More projects on GitHub
+              </a>
+            </p>
+          </div>
+        </Scene>
+
+        {/* 4. Experience: burned into wooden boards */}
+        <Scene id="experience" bg="scaleY(-1)" shade="linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.35))">
+          <div className="mx-auto max-w-7xl px-5 py-28 lg:px-12">
+            <SectionTitle kick="trail markers so far" title="Experience" />
+            <ol className="mt-12 grid gap-14 lg:grid-cols-2">
+              {experience.map((e, i) => (
+                <li key={e.company} style={{ transform: `rotate(${i ? 2 : -2}deg)` }}>
+                  <div className="flex aspect-[1340/715] flex-col items-center justify-center bg-[url(/img/board.webp)] bg-[length:100%_100%] text-center drop-shadow-[0_22px_18px_rgba(0,0,0,.6)]">
+                    <h3 className="burn font-serif text-5xl font-extrabold tracking-tight sm:text-6xl">{e.company}</h3>
+                    <p className="burn font-serif text-xl font-semibold italic sm:text-2xl">{e.role}</p>
+                    <p className="burn mt-2 text-sm font-bold tracking-[0.15em]">
+                      {e.when.toUpperCase()} · {e.where.toUpperCase()}
+                    </p>
+                  </div>
+                  <div className="glass mx-4 mt-5 rounded-2xl bg-[rgba(15,25,10,.45)] px-5 py-4 leading-relaxed">
+                    {e.what}
+                    <a
+                      href={e.site.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 block font-bold text-lime underline-offset-4 hover:underline"
+                    >
+                      {e.site.label} ↗
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </Scene>
+
+        {/* 5. Toolbox: nursery tags hanging from a twig */}
+        <Scene bg="rotate(180deg)" shade="rgba(0,0,0,.45)">
+          <div className="mx-auto max-w-7xl px-5 py-28 lg:px-12">
+            <SectionTitle kick="labels from my garden" title="Toolbox" />
+            <div className="relative mt-10">
+              <Image
+                src="/img/twig.webp"
+                alt=""
+                width={1484}
+                height={167}
+                className="absolute left-0 top-0 hidden w-full drop-shadow-[0_10px_8px_rgba(0,0,0,.6)] lg:block"
+              />
+              <ul className="flex flex-wrap justify-center gap-x-4 gap-y-8 pt-6 lg:flex-nowrap lg:justify-between lg:gap-6 lg:pt-12">
+                {skills.map((s, i) => (
+                  <li
+                    key={s.group}
+                    className="tag relative w-[160px] sm:w-[200px] drop-shadow-[0_18px_14px_rgba(0,0,0,.6)]"
+                    style={{ transform: `rotate(${[-4, 3, -2, 4, -3][i]}deg)` }}
+                  >
+                    <span aria-hidden className="absolute -top-12 left-1/2 hidden h-14 w-0.5 bg-[#d9c7a0] lg:block" />
+                    <div className="flex aspect-[420/1226] flex-col items-center bg-[url(/img/tag.webp)] bg-[length:100%_100%] px-3 pt-[4.6rem] text-center sm:px-4 sm:pt-24">
+                      <p className="text-[11px] tracking-[0.3em] text-[#8a6b3e]">VARIETY</p>
+                      <h3 className="mb-3 w-full border-b border-[#50321433] pb-2 font-serif text-xl font-extrabold text-[#2e1f0c] sm:text-2xl">
+                        {s.group}
+                      </h3>
+                      {s.items.map((it) => (
+                        <p key={it} className="font-[family-name:var(--font-hand)] text-[21px] leading-tight text-[#3b2a14] sm:text-[27px]">
+                          {it}
+                        </p>
+                      ))}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </Scene>
+
+        {/* 6. Contact: the big sign */}
+        <Scene id="contact" shade="radial-gradient(ellipse at 50% 45%,rgba(0,0,0,.2),rgba(0,0,0,.6))">
+          <div className="mx-auto flex min-h-svh max-w-5xl flex-col items-center justify-center px-5 py-24">
+            <div className="flex aspect-[1340/715] w-full -rotate-[1.5deg] flex-col items-center justify-center bg-[url(/img/board.webp)] bg-[length:100%_100%] px-6 text-center drop-shadow-[0_30px_24px_rgba(0,0,0,.65)]">
+              <h2 className="burn font-serif text-[clamp(1.9rem,6.4vw,4.75rem)] font-extrabold leading-none tracking-tight">
+                Let&apos;s build something
+                <br />
+                <i className="font-semibold">that matters.</i>
+              </h2>
+              <a
+                href={`mailto:${EMAIL}`}
+                className="burn mt-4 font-serif text-[clamp(1rem,2.6vw,1.9rem)] font-extrabold hover:underline sm:mt-6"
+              >
+                {EMAIL}
+              </a>
+            </div>
+            <div className="mt-12 flex flex-wrap justify-center gap-3">
+              <a href={`mailto:${EMAIL}`} className={btnLight}>
+                Email me
+              </a>
+              <CopyEmail email={EMAIL} className={btnGlass} />
+              <a href={GITHUB} target="_blank" rel="noreferrer" className={btnGlass}>
+                GitHub
+              </a>
+              <a href={LINKEDIN} target="_blank" rel="noreferrer" className={btnGlass}>
+                LinkedIn
+              </a>
+            </div>
+            <p className="mt-8 text-sm text-white/75">© 2026 Dev Aryan · grown with Next.js</p>
+          </div>
+        </Scene>
+      </main>
+    </>
   );
 }

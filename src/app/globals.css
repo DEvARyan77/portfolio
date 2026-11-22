@@ -1,55 +1,155 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #15122e;
-  --color-paper: #f5f3ff;
-  --color-blue: #3a2bff;
-  --color-yellow: #ffd60a;
-  --color-pink: #ff4d8d;
-  --color-mint: #2ee6a8;
-  --font-display: "Space Grotesk Variable", system-ui, sans-serif;
-  --font-sans: "Inter Variable", system-ui, sans-serif;
+  --color-cream: #f7f2e4;
+  --color-ink: #2b2a20;
+  --color-moss: #3d5a1e;
+  --color-lime: #e9f5c8;
+  --color-bark: #3b220e;
+  --font-serif: "Fraunces Variable", Georgia, serif;
+  --font-sans: "Geist Variable", system-ui, sans-serif;
+  --font-hand: "Caveat", cursive;
 }
 
 html {
   scroll-behavior: smooth;
+  background: #0d150a;
+}
+
+html,
+body {
+  overflow-x: clip;
 }
 
 body {
-  background: var(--color-paper);
-  color: var(--color-ink);
   font-family: var(--font-sans);
+  color: white;
+  background: #0d150a;
 }
 
 ::selection {
-  background: var(--color-yellow);
-  color: var(--color-ink);
+  background: var(--color-lime);
+  color: var(--color-moss);
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-pink);
+  outline: 2px solid var(--color-lime);
   outline-offset: 3px;
+  border-radius: 6px;
 }
 
-/* The one orchestrated moment: the name rises in on load */
-.rise {
+/* every scene sits on the same forest floor, turned a different way */
+.scene {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+}
+.scene-bg {
+  position: absolute;
+  inset: -6%;
+  z-index: -2;
+  background: url(/img/forest.webp) center / cover;
+}
+.scene-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+}
+
+.paper {
+  background-color: var(--color-cream);
+  background-image: radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.6), transparent 40%),
+    radial-gradient(circle at 80% 90%, rgba(160, 130, 80, 0.12), transparent 50%);
+  color: var(--color-ink);
+}
+
+.lift {
+  box-shadow: 0 30px 50px -12px rgba(5, 15, 2, 0.75), 0 6px 14px rgba(5, 15, 2, 0.45);
+}
+
+.burn {
+  color: var(--color-bark);
+  text-shadow: 0 1px 0 rgba(255, 225, 180, 0.35), 0 -1px 1px rgba(0, 0, 0, 0.45);
+}
+
+.kick {
+  font-family: var(--font-hand);
+  font-weight: 700;
+  color: var(--color-lime);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.heading {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: white;
+  letter-spacing: -0.03em;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+}
+
+/* hero polaroid: swings gently, avatar breathes */
+.swing {
+  transform-origin: 50% -20px;
+  animation: swing 6s ease-in-out infinite alternate;
+}
+@keyframes swing {
+  from { transform: rotate(4deg); }
+  to { transform: rotate(8deg); }
+}
+.breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.025) translateY(-4px); }
+}
+.wave {
   display: inline-block;
-  transform: translateY(105%);
-  animation: rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  transform-origin: 70% 80%;
+  animation: wave 2.4s ease-in-out infinite;
+}
+@keyframes wave {
+  0%, 60%, 100% { transform: rotate(0); }
+  10%, 30% { transform: rotate(16deg); }
+  20%, 40% { transform: rotate(-8deg); }
 }
 
-@keyframes rise {
-  to {
-    transform: translateY(0);
-  }
+/* 3D flip for the photo */
+.flip { perspective: 1400px; }
+.flip-inner {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.flip-inner.is-flipped { transform: rotateY(180deg); }
+.flip-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.flip-back { position: absolute; inset: 0; transform: rotateY(180deg); }
+
+/* nursery tags sway when hovered */
+.tag { transform-origin: 50% 0; transition: transform 0.6s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.tag:hover { transform: rotate(0deg) !important; }
+
+.specimen { transition: transform 0.4s ease, box-shadow 0.4s ease; }
+.specimen:hover { transform: translateY(-8px) rotate(0deg) !important; }
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #b6f36b;
+  box-shadow: 0 0 0 5px rgba(182, 243, 107, 0.25);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  .rise {
-    transform: none;
-    animation: none;
-  }
+  html { scroll-behavior: auto; }
+  .swing, .breathe, .wave { animation: none; }
+  .flip-inner, .tag, .specimen { transition: none; }
 }

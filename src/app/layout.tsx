@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
-import "@fontsource-variable/space-grotesk";
-import "@fontsource-variable/inter";
+import "@fontsource-variable/fraunces";
+import "@fontsource-variable/fraunces/wght-italic.css";
+import "@fontsource-variable/geist";
+import "@fontsource/caveat/700.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Dev Aryan | Full-stack developer",
+  title: "Dev Aryan | Software developer",
   description:
-    "Dev Aryan builds full-stack health-tech software: insurance claims, hospital OPDs, pharmacy and ambulance systems. Java, Spring Boot, React, Node.js and MongoDB.",
+    "Dev Aryan is a software developer building AI-native, full-stack systems for healthcare: ClaimFlow, MediSync and DocOnGo.",
   openGraph: {
-    title: "Dev Aryan | Full-stack developer",
-    description:
-      "Full-stack health-tech projects: ClaimFlow, MediSync and DocOnGo.",
+    title: "Dev Aryan | Software developer",
+    description: "AI-native, full-stack systems for healthcare. Walk through the forest to see the work.",
+    images: ["/og.jpg"],
     type: "website",
   },
 };
