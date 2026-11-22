@@ -8,7 +8,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Dev Aryan | Software developer",
   description:
-    "Dev Aryan is a software developer building AI-native, full-stack systems for healthcare: ClaimFlow, MediSync and DocOnGo.",
+    "Dev Aryan is a software developer building AI-native, full-stack systems for healthcare, including ClaimFlow and MediSync.",
   openGraph: {
     title: "Dev Aryan | Software developer",
     description: "AI-native, full-stack systems for healthcare. Walk through the forest to see the work.",
