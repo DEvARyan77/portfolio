@@ -20,7 +20,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="antialiased">
-      <body className="min-h-screen">{children}</body>
+      <body className="min-h-screen">
+        <noscript>
+          <style>{"#top{visibility:visible!important}"}</style>
+        </noscript>
+        {children}
+      </body>
     </html>
   );
 }

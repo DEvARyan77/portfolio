@@ -445,6 +445,9 @@ export default function Forest() {
       ScrollTrigger.sort();
       ScrollTrigger.refresh();
 
+      // the hero stays hidden until its animations are set up, so nothing flashes in its final state first
+      gsap.set("#top", { visibility: "visible" });
+
       return () => cleanups.forEach((c) => c());
     },
     { scope: root },
@@ -493,7 +496,7 @@ export default function Forest() {
 
       <main>
         {/* 1 + 2. Hero, then the photo flips into the field notes */}
-        <section id="top" className="relative lg:h-screen">
+        <section id="top" className="invisible relative lg:h-screen">
           <div className="mx-auto grid max-w-7xl items-center gap-14 px-6 pb-10 pt-28 lg:h-full lg:grid-cols-[1.15fr_1fr] lg:px-12 lg:pb-0 lg:pt-16">
             <div className="hero-copy [text-shadow:0_4px_30px_rgba(0,0,0,.55)]">
               <p className="hero-chip glass inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-sm [text-shadow:none]">
