@@ -11,20 +11,30 @@
   --font-hand: "Caveat", cursive;
 }
 
-html {
-  scroll-behavior: smooth;
-  background: #0d150a;
-}
-
 html,
 body {
   overflow-x: clip;
 }
 
+html {
+  background: #0d150a;
+}
+
 body {
   font-family: var(--font-sans);
   color: white;
-  background: #0d150a;
+}
+
+/* Lenis smooth scrolling */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
 }
 
 ::selection {
@@ -38,23 +48,35 @@ body {
   border-radius: 6px;
 }
 
-/* every scene sits on the same forest floor, turned a different way */
-.scene {
-  position: relative;
-  min-height: 100svh;
-  overflow: hidden;
-  isolation: isolate;
-}
-.scene-bg {
-  position: absolute;
-  inset: -6%;
+/* one continuous forest floor behind the whole page */
+.forest {
+  position: fixed;
+  inset: 0;
   z-index: -2;
-  background: url(/img/forest.webp) center / cover;
+  overflow: hidden;
+  pointer-events: none;
 }
-.scene-shade {
+.forest-img {
+  position: absolute;
+  inset: -22%;
+  background: url(/img/forest.webp) center / cover;
+  will-change: transform;
+}
+.forest-shade {
   position: absolute;
   inset: 0;
-  z-index: -1;
+  background: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.62) 90%);
+}
+
+/* falling leaves */
+.leaf {
+  position: fixed;
+  top: -60px;
+  z-index: 40;
+  width: 54px;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 8px rgba(0, 0, 0, 0.4));
+  will-change: transform;
 }
 
 .glass {
@@ -95,22 +117,14 @@ body {
   text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
 }
 
-/* hero polaroid: swings gently, avatar breathes */
-.swing {
-  transform-origin: 50% -20px;
-  animation: swing 6s ease-in-out infinite alternate;
+.preserve-3d {
+  transform-style: preserve-3d;
 }
-@keyframes swing {
-  from { transform: rotate(4deg); }
-  to { transform: rotate(8deg); }
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
-.breathe {
-  animation: breathe 4s ease-in-out infinite;
-}
-@keyframes breathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.025) translateY(-4px); }
-}
+
 .wave {
   display: inline-block;
   transform-origin: 70% 80%;
@@ -122,34 +136,20 @@ body {
   20%, 40% { transform: rotate(-8deg); }
 }
 
-/* 3D flip for the photo */
-.flip { perspective: 1400px; }
-.flip-inner {
-  position: relative;
-  transform-style: preserve-3d;
-  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-.flip-inner.is-flipped { transform: rotateY(180deg); }
-.flip-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-.flip-back { position: absolute; inset: 0; transform: rotateY(180deg); }
-
-/* nursery tags sway when hovered */
-.tag { transform-origin: 50% 0; transition: transform 0.6s cubic-bezier(0.3, 1.6, 0.5, 1); }
-.tag:hover { transform: rotate(0deg) !important; }
-
-.specimen { transition: transform 0.4s ease, box-shadow 0.4s ease; }
-.specimen:hover { transform: translateY(-8px) rotate(0deg) !important; }
-
 .dot {
   width: 8px;
   height: 8px;
   border-radius: 9999px;
   background: #b6f36b;
-  box-shadow: 0 0 0 5px rgba(182, 243, 107, 0.25);
+  animation: pulse 2s ease-out infinite;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(182, 243, 107, 0.6); }
+  100% { box-shadow: 0 0 0 10px rgba(182, 243, 107, 0); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  .swing, .breathe, .wave { animation: none; }
-  .flip-inner, .tag, .specimen { transition: none; }
+.mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
 }
