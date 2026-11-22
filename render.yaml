@@ -1,0 +1,7 @@
+services:
+  - type: web
+    runtime: static
+    name: dev-aryan-portfolio
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./out
+    pullRequestPreviewsEnabled: false

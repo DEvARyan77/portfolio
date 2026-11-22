@@ -52,7 +52,7 @@ export default function Home() {
             </a>
           ))}
         </nav>
-        <a href="/minimal" className="glass rounded-full px-4 py-2 text-sm font-semibold">
+        <a href="/minimal/" className="glass rounded-full px-4 py-2 text-sm font-semibold">
           Minimal version
         </a>
       </header>
