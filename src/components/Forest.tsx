@@ -147,13 +147,42 @@ export default function Forest() {
         gsap.delayedCall(1.5 + i * 1.7, fall);
       });
 
-      /* ---------- the little film inside the photo: Dev keeps taking pictures ---------- */
-      gsap.to(".photo-person", { y: -6, rotation: -1.2, duration: 1.6, yoyo: true, repeat: -1, ease: "sine.inOut" });
+      /* ---------- the little film inside the photo: Dev walks in waving, takes a picture, walks out ---------- */
+      const steps = (dur: number) => ({
+        keyframes: { y: [0, -9, 0, -9, 0, -9, 0, -9, 0], rotation: [0, -2, 0, 2, 0, -2, 0, 2, 0] },
+        duration: dur,
+        ease: "none",
+      });
+      gsap.set(".photo-person", { xPercent: -140 });
+      gsap.set(".pose-cam", { opacity: 0 });
       gsap
-        .timeline({ repeat: -1, repeatDelay: 2.4, delay: 3.4 })
-        .to(".photo-person", { scale: 0.985, duration: 0.08, yoyo: true, repeat: 1 }, 0)
-        .fromTo(".lens-flash", { scale: 0, opacity: 1 }, { scale: 2.2, opacity: 0, duration: 0.45, ease: "power2.out" }, 0.05)
-        .fromTo(".photo-flash", { opacity: 0.7 }, { opacity: 0, duration: 0.5, ease: "power2.out" }, 0.05);
+        .timeline({ repeat: -1, delay: 2.4 })
+        .set(".photo-person", { xPercent: -140, y: 0, rotation: 0 })
+        .set(".pose-wave", { opacity: 1 })
+        .set(".pose-cam", { opacity: 0 })
+        // walk in, waving
+        .to(".photo-person", { xPercent: 0, duration: 1.7, ease: "power1.out" })
+        .to(".photo-person", steps(1.7), "<")
+        // raise the camera
+        .to(".pose-wave", { opacity: 0, duration: 0.15 }, "+=0.35")
+        .to(".pose-cam", { opacity: 1, duration: 0.15 }, "<")
+        // click
+        .to(".photo-person", { scale: 0.98, duration: 0.08, yoyo: true, repeat: 1 }, "+=0.6")
+        .fromTo(
+          ".lens-flash",
+          { scale: 0, opacity: 1 },
+          { scale: 2.4, opacity: 0, duration: 0.45, ease: "power2.out", immediateRender: false },
+          "<0.05",
+        )
+        .fromTo(".photo-flash", { opacity: 0.75 }, { opacity: 0, duration: 0.55, ease: "power2.out", immediateRender: false }, "<")
+        // lower the camera, wave goodbye
+        .to(".pose-cam", { opacity: 0, duration: 0.15 }, "+=0.7")
+        .to(".pose-wave", { opacity: 1, duration: 0.15 }, "<")
+        // walk out
+        .to(".photo-person", { xPercent: 140, duration: 1.7, ease: "power1.in" }, "+=0.45")
+        .to(".photo-person", steps(1.7), "<")
+        // an empty forest for a moment
+        .to({}, { duration: 1.1 });
 
       /* ---------- hero entrance: photo drops, flash, it develops, then the words arrive ---------- */
       gsap
@@ -535,15 +564,25 @@ export default function Forest() {
                       <div
                         className="photo-dev relative aspect-square overflow-hidden"
                         role="img"
-                        aria-label="Animated avatar of Dev Aryan taking a photo with an instant camera"
+                        aria-label="Animated avatar of Dev Aryan walking in, taking a photo with an instant camera, and walking away"
                       >
                         <Image src="/img/photo-bg.webp" alt="" fill sizes="400px" priority className="object-cover" />
                         <div className="photo-person absolute bottom-0 left-1/2 h-[94%] origin-bottom -translate-x-1/2">
-                          <Image src="/img/pose-camera.webp" alt="" width={503} height={700} priority className="h-full w-auto max-w-none" />
-                          <span
-                            aria-hidden
-                            className="lens-flash absolute left-[40.5%] top-[24.7%] -ml-10 -mt-10 h-20 w-20 scale-0 rounded-full bg-[radial-gradient(circle,#fff_0%,rgba(255,255,240,.85)_25%,rgba(255,255,220,0)_70%)]"
-                          />
+                          <div className="relative h-full">
+                            <Image src="/img/pose-camera.webp" alt="" width={503} height={700} priority className="pose-cam h-full w-auto max-w-none" />
+                            <Image
+                              src="/img/pose-wave.webp"
+                              alt=""
+                              width={523}
+                              height={700}
+                              priority
+                              className="pose-wave absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2"
+                            />
+                            <span
+                              aria-hidden
+                              className="lens-flash absolute left-[40.5%] top-[24.7%] -ml-10 -mt-10 h-20 w-20 scale-0 rounded-full bg-[radial-gradient(circle,#fff_0%,rgba(255,255,240,.85)_25%,rgba(255,255,220,0)_70%)]"
+                            />
+                          </div>
                         </div>
                         <span aria-hidden className="photo-flash absolute inset-0 bg-white opacity-0" />
                         <p className="psst absolute bottom-3 right-3 -rotate-6 rounded-md bg-[rgba(20,30,10,.55)] px-2.5 py-1 font-[family-name:var(--font-hand)] text-2xl font-bold leading-none text-[#f6ff7a] backdrop-blur-sm">
